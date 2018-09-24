@@ -1,16 +1,18 @@
-from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
-from collections import OrderedDict
-from guacamole.client import GuacamoleClient
+import logging
 from threading import Thread
 from urlparse import parse_qs
 
-from cryptography.fernet import Fernet
-from cryptography.fernet import InvalidToken
 import configparser
-import logging
+from cryptography.fernet import Fernet
+from gevent import monkey
+from gevent.pywsgi import WSGIServer
+from geventwebsocket import WebSocketApplication
+from guacamole.client import GuacamoleClient
+
+monkey.patch_all()
+port = 8000  # Default port for this server
 
 
-#
 class GuacamoleApplication(WebSocketApplication):
     def __init__(self, ws):
         self.client = None
@@ -56,7 +58,6 @@ class GuacamoleApplication(WebSocketApplication):
             self.ws.send(instruction)
 
 
-WebSocketServer(
-    ('127.0.0.1', 8000),
-    Resource(OrderedDict([('/', GuacamoleApplication)]))
-).serve_forever()
+if __name__ == '__main__':
+    print 'Serving on', port
+    WSGIServer(('127.0.0.1', port), GuacamoleApplication).serve_forever()
