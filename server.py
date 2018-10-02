@@ -4,12 +4,10 @@ from urlparse import parse_qs
 
 import configparser
 from cryptography.fernet import Fernet
-from gevent import monkey
-from gevent.pywsgi import WSGIServer
-from geventwebsocket import WebSocketApplication
+from geventwebsocket import WebSocketApplication, WebSocketServer, Resource
+from collections import OrderedDict
 from guacamole.client import GuacamoleClient
 
-monkey.patch_all()
 port = 8000  # Default port for this server
 
 
@@ -30,6 +28,7 @@ class GuacamoleApplication(WebSocketApplication):
         self.client.send(message)
 
     def on_open(self):
+        # TODO implement check for token
         parameters = parse_qs(self.ws.environ['QUERY_STRING'])
         self.client = GuacamoleClient('127.0.0.1', 4822)
 
@@ -59,5 +58,5 @@ class GuacamoleApplication(WebSocketApplication):
 
 
 if __name__ == '__main__':
-    print 'Serving on', port
-    WSGIServer(('127.0.0.1', port), GuacamoleApplication).serve_forever()
+    print "Running on port:", port
+    WebSocketServer(('127.0.0.1', port), Resource(OrderedDict([('/', GuacamoleApplication)]))).serve_forever()
