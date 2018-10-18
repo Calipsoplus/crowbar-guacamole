@@ -17,7 +17,7 @@ class GuacamoleApplication(WebSocketApplication):
         super(GuacamoleApplication, self).__init__(ws)
         self.config = configparser.ConfigParser()
         self.config.read('config.ini')
-        self.fernet = Fernet(bytes(self.config['DEFAULT']['FERNET_KEY']))
+        # self.fernet = Fernet(bytes(self.config['DEFAULT']['FERNET_KEY']))
         logging.basicConfig(filename='crowbar-guacamole.log', level=logging.DEBUG)
 
     @classmethod
@@ -30,8 +30,7 @@ class GuacamoleApplication(WebSocketApplication):
     def on_open(self):
         # TODO implement check for token
         parameters = parse_qs(self.ws.environ['QUERY_STRING'])
-        self.client = GuacamoleClient('127.0.0.1', 4822)
-
+        self.client = GuacamoleClient(str(self.config['DEFAULT']['GUACD_HOST']), 4822)
         self.client.handshake(protocol='rdp',
                               hostname=parameters['hostname'][0],
                               port=3389,
@@ -59,4 +58,4 @@ class GuacamoleApplication(WebSocketApplication):
 
 if __name__ == '__main__':
     print "Running on port:", port
-    WebSocketServer(('127.0.0.1', port), Resource(OrderedDict([('/', GuacamoleApplication)]))).serve_forever()
+    WebSocketServer(('0.0.0.0', port), Resource(OrderedDict([('/', GuacamoleApplication)]))).serve_forever()
