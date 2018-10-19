@@ -8,6 +8,9 @@ from geventwebsocket import WebSocketApplication, WebSocketServer, Resource
 from collections import OrderedDict
 from guacamole.client import GuacamoleClient
 
+from gevent import monkey
+monkey.patch_all()
+
 port = 8000  # Default port for this server
 
 
